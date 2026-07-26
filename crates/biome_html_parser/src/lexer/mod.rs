@@ -23,6 +23,10 @@ pub(crate) struct HtmlLexer<'src> {
     preceding_line_break: bool,
     after_newline: bool,
     unicode_bom_length: usize,
+    /// Whether `{{` opens an interpolation. Off for a language such as Svelte,
+    /// where `{{a: true}}` is one expression holding an object literal rather
+    /// than an interpolation.
+    double_text_expressions: bool,
     /// Set to `true` after the Astro frontmatter closing fence (`---`) has been
     /// consumed. Once set, the `Regular` context will no longer treat `---` as a
     /// `FENCE` token, allowing `---` to appear as plain text in HTML content.
@@ -88,7 +92,13 @@ impl<'src> HtmlLexer<'src> {
             current_flags: TokenFlags::empty(),
             unicode_bom_length: 0,
             after_frontmatter: false,
+            double_text_expressions: true,
         }
+    }
+
+    /// Sets whether `{{` is read as the start of an interpolation.
+    pub fn set_double_text_expressions(&mut self, value: bool) {
+        self.double_text_expressions = value;
     }
 
     /// Sets the `after_frontmatter` flag. When `true`, `---` in the `Regular`
@@ -1414,7 +1424,9 @@ impl<'src> HtmlLexer<'src> {
 
     #[inline(always)]
     fn at_opening_double_text_expression(&self) -> bool {
-        self.current_byte() == Some(b'{') && self.byte_at(1) == Some(b'{')
+        self.double_text_expressions
+            && self.current_byte() == Some(b'{')
+            && self.byte_at(1) == Some(b'{')
     }
 
     #[inline(always)]
