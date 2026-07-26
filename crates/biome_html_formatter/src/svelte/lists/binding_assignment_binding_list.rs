@@ -12,26 +12,27 @@ impl FormatRule<SvelteBindingAssignmentBindingList> for FormatSvelteBindingAssig
         node: &SvelteBindingAssignmentBindingList,
         f: &mut HtmlFormatter,
     ) -> FormatResult<()> {
-        let mut join = f.join_nodes_with_space();
+        let mut is_first = true;
 
         for binding_assignment in node.elements() {
-            let node = binding_assignment.node()?;
-            let separator = binding_assignment.trailing_separator()?;
+            if !is_first {
+                write!(f, [space()])?;
+            }
+            is_first = false;
 
-            join.entry(
-                node.syntax(),
-                &format_with(|f| {
-                    write!(f, [node.format()])?;
+            // An array pattern may skip a position, as in `[, second]`. That
+            // hole has no node of its own; only the separator after it says it
+            // is there, so a missing node here is written as nothing rather
+            // than giving up on the whole file.
+            if let Ok(node) = binding_assignment.node() {
+                write!(f, [node.format()])?;
+            }
 
-                    if let Some(separator) = separator {
-                        write!(f, [separator.format()])?;
-                    }
-
-                    Ok(())
-                }),
-            )
+            if let Some(separator) = binding_assignment.trailing_separator()? {
+                write!(f, [separator.format()])?;
+            }
         }
 
-        join.finish()
+        Ok(())
     }
 }
