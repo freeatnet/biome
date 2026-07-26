@@ -80,7 +80,7 @@ impl<'a> From<&'a SvelteClassDirective> for FmtSvelteDirective<'a> {
             token: value.class_token(),
             value: value.value(),
             _node: value.syntax(),
-            allows_compact: false,
+            allows_compact: true,
         }
     }
 }
@@ -90,7 +90,7 @@ impl<'a> From<&'a SvelteStyleDirective> for FmtSvelteDirective<'a> {
             token: value.style_token(),
             value: value.value(),
             _node: value.syntax(),
-            allows_compact: false,
+            allows_compact: true,
         }
     }
 }
