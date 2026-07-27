@@ -24,13 +24,18 @@ pub use css_module_info::{
     ImportTreeDisplay, ImportTreeNode,
 };
 pub use db::queries::{
-    CallArgumentTypeInput, CallExpressionTypeInput, InferredModuleTypes, NormalizeTypeInput,
-    SymbolFromModuleInfo, build_import_tree_for_html, build_import_tree_for_js,
-    css_classes_for_module, find_css_class_definition, find_js_exported_symbol,
-    find_jsdoc_for_exported_symbol, infer_call_argument_type, infer_call_expression_type,
-    infer_constructor_argument_type, infer_module_types, infer_module_types_bottom_up,
-    is_class_referenced_by_importers, normalize_type, transitive_importers_of,
-    traverse_import_tree_for_classes, traverse_import_tree_for_html_classes,
+    BindingTypeInput, CallArgumentTypeInput, CallExpressionTypeInput, ExpressionTypeInput,
+    InferredModuleTypes, LocalTypeInput, NormalizeTypeInput, SymbolFromModuleInfo,
+    build_import_tree_for_html, build_import_tree_for_js, css_classes_for_module,
+    find_css_class_definition, find_js_exported_symbol, find_jsdoc_for_exported_symbol,
+    find_member_type, find_value_member_type, function_returns_promise, infer_binding_type,
+    infer_call_argument_type, infer_call_expression_type, infer_constructor_argument_type,
+    infer_export_type, infer_expression_function_returns_promise,
+    infer_expression_is_array_of_promises, infer_expression_is_promise, infer_expression_type,
+    infer_local_type, infer_module_types, infer_module_types_bottom_up, is_array_of_promise_type,
+    is_class_referenced_by_importers, is_promise_type, normalize_type, resolve_callable_type,
+    transitive_importers_of, traverse_import_tree_for_classes,
+    traverse_import_tree_for_html_classes,
 };
 pub use db::{ModuleDb, ModuleGraphGeneration, TypeDb, module_for_key};
 pub use diagnostics::ModuleDiagnostic;
