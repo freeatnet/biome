@@ -1,5 +1,130 @@
 # @biomejs/biome
 
+## 2.5.7
+
+### Patch Changes
+
+- [#10822](https://github.com/biomejs/biome/pull/10822) [`c171b3b`](https://github.com/biomejs/biome/commit/c171b3bd513d49c35b66cdc74a5de0ca0766b6ef) Thanks [@pkallos](https://github.com/pkallos)! - Added the option `ignoreIfStatements` to [useNullishCoalescing](https://biomejs.dev/linter/rules/use-nullish-coalescing/). Biome now flags `if` statements that only assign to a nullish variable (such as `if (!a) { a = b }`) and can rewrite them to `??=`. When enabled, Biome ignores those `if` statements.
+
+- [#10094](https://github.com/biomejs/biome/pull/10094) [`e007143`](https://github.com/biomejs/biome/commit/e00714360807115210e549caca0f235431ca9a8a) Thanks [@THEjacob1000](https://github.com/THEjacob1000)! - Added the nursery rule [`noTailwindArbitraryValue`](https://biomejs.dev/linter/rules/no-tailwind-arbitrary-value/). Biome now reports Tailwind CSS arbitrary values such as `w-[400px]`, including in HTML/JSX class attributes, configured utility functions, and tagged templates.
+
+- [#8239](https://github.com/biomejs/biome/pull/8239) [`a519f9d`](https://github.com/biomejs/biome/commit/a519f9d19e56015ec906efac4629fbb15708f5e2) Thanks [@cormacrelf](https://github.com/cormacrelf)! - Fixed [#8233](https://github.com/biomejs/biome/issues/8233), where Biome CLI in
+  stdin mode didn't work correctly when handling files in projects with nested
+  configurations. For example, with the following structure,
+  `--stdin-file-path=subdirectory/...` would not use the nested configuration in
+  `subdirectory/biome.json`:
+
+  ```
+  ├── biome.json
+  └── subdirectory
+      ├── biome.json
+      └── lib.js
+  ```
+
+  ```shell
+  biome format --write --stdin-file-path=subdirectory/lib.js < subdirectory/lib.js
+  ```
+
+  Now, the nested configuration is correctly picked up and applied.
+
+  In addition, Biome now shows a warning if `--stdin-file-path` is provided but
+  that path is ignored and therefore not formatted or fixed.
+
+- [#11138](https://github.com/biomejs/biome/pull/11138) [`8c2c6bd`](https://github.com/biomejs/biome/commit/8c2c6bd96c035e506bc60b75448afb039e331fb1) Thanks [@ematipico](https://github.com/ematipico)! - Fixed [`noUnnecessaryConditions`](https://biomejs.dev/linter/rules/no-unnecessary-conditions/): Biome now chooses the same function overload as TypeScript when an argument is a callback, so conditions that were previously missed are reported.
+
+  The following code is now invalid, because a parameter typed `() => void` accepts an `async` callback and `schedule` therefore returns `string`:
+
+  ```ts
+  declare function schedule(handler: () => void): string;
+  declare function schedule(handler: () => Promise<void>): string | undefined;
+
+  schedule(async () => {}) ?? "fallback";
+  ```
+
+  The following code is also now invalid, because `map(() => 42)` returns `42`:
+
+  ```ts
+  type Mapper<T> = () => T;
+  declare function map<T>(mapper: Mapper<T>): T;
+
+  map(() => 42) || flag;
+  ```
+
+- [#11138](https://github.com/biomejs/biome/pull/11138) [`8c2c6bd`](https://github.com/biomejs/biome/commit/8c2c6bd96c035e506bc60b75448afb039e331fb1) Thanks [@ematipico](https://github.com/ematipico)! - Fixed [#11087](https://github.com/biomejs/biome/issues/11087): [`noUnnecessaryConditions`](https://biomejs.dev/linter/rules/no-unnecessary-conditions/) no longer reports optional chains and nullish coalescing whose receiver can be nullish.
+
+  For example, the optional chain and fallback in the following code are no longer reported:
+
+  ```ts
+  declare const usage: { range: { startDate: string } } | null;
+  const startDate = usage?.range.startDate ?? "N/A";
+  ```
+
+- [#11118](https://github.com/biomejs/biome/pull/11118) [`9c16840`](https://github.com/biomejs/biome/commit/9c16840801a806ba34fbba7da28b9724d250207a) Thanks [@subotac](https://github.com/subotac)! - Fixed [#11098](https://github.com/biomejs/biome/issues/11098): The HTML formatter now preserves the configured trailing newline when a file ends with a comment.
+
+  ```diff
+  -<!-- trailing comment -->
+  \ No newline at end of file
+  +<!-- trailing comment -->
+  ```
+
+- [#11124](https://github.com/biomejs/biome/pull/11124) [`d890b39`](https://github.com/biomejs/biome/commit/d890b39c3ef21040bded453d9af91e1b301a0d67) Thanks [@denbezrukov](https://github.com/denbezrukov)! - Fixed CSS formatting of line comments between a declaration colon and value to preserve their source indentation.
+
+  ```diff
+   .test {
+     background:
+  -  /////// foo
+  -  // bar
+  +        /////// foo
+  +        // bar
+       radial-gradient(circle, #000, transparent);
+   }
+  ```
+
+- [#11113](https://github.com/biomejs/biome/pull/11113) [`3d8ab73`](https://github.com/biomejs/biome/commit/3d8ab73619f1c62a2d544d41ffee16eab9307d51) Thanks [@denbezrukov](https://github.com/denbezrukov)! - Fixed CSS formatting of long block comments between comma-separated property values:
+
+  ```diff
+   .foo {
+     box-shadow:
+  -    1000px /* long long long long long long long long long long long long comment */ 1000px /* long long long long long long long long long comment */ 2px color(srgb 0.555555555 0.555555555 0.555555555),
+  +    1000px
+  +      /* long long long long long long long long long long long long comment */
+  +      1000px /* long long long long long long long long long comment */ 2px
+  +      color(srgb 0.555555555 0.555555555 0.555555555),
+       1px 1px black;
+   }
+  ```
+
+- [#11077](https://github.com/biomejs/biome/pull/11077) [`4dcd0d9`](https://github.com/biomejs/biome/commit/4dcd0d99579650191696dc5fb8b16dd69d65c4ee) Thanks [@dyc3](https://github.com/dyc3)! - Fixed a bug where the HTML formatter collapsed the whitespace inside `<textarea>`, `<xmp>` and `<plaintext>`, changing what the page renders.
+
+  ```diff
+  - <textarea>
+  -  line one
+  - line two </textarea>
+  + <textarea>line one line two</textarea>
+  ```
+
+  Biome now prints the content of these elements exactly as it appears in the source, matching the existing behavior for `<pre>`.
+
+- [#10094](https://github.com/biomejs/biome/pull/10094) [`e007143`](https://github.com/biomejs/biome/commit/e00714360807115210e549caca0f235431ca9a8a) Thanks [@THEjacob1000](https://github.com/THEjacob1000)! - Fixed [`useSortedClasses`](https://biomejs.dev/linter/rules/use-sorted-classes/) to correctly detect unsorted classes in static member expression tagged templates (e.g. `tw.div\`...\``). Previously, these were silently skipped due to surrounding whitespace trivia not being stripped from the tag name.
+
+- [#11134](https://github.com/biomejs/biome/pull/11134) [`2fa0a62`](https://github.com/biomejs/biome/commit/2fa0a62224af7a13869a28ef80aefa5ea75ebfd2) Thanks [@yanthomasdev](https://github.com/yanthomasdev)! - Clarified the warning emitted when using the experimental `json` and `json-pretty` reporters.
+
+- [#11132](https://github.com/biomejs/biome/pull/11132) [`dd9158a`](https://github.com/biomejs/biome/commit/dd9158a72916c1ec8635461eb710f0296e4ad10f) Thanks [@denbezrukov](https://github.com/denbezrukov)! - Fixed [#10905](https://github.com/biomejs/biome/issues/10905): Biome no longer crashes while analyzing incomplete CSS property values during editing.
+
+- [#11138](https://github.com/biomejs/biome/pull/11138) [`8c2c6bd`](https://github.com/biomejs/biome/commit/8c2c6bd96c035e506bc60b75448afb039e331fb1) Thanks [@ematipico](https://github.com/ematipico)! - Fixed [#11121](https://github.com/biomejs/biome/issues/11121): [`noUnnecessaryConditions`](https://biomejs.dev/linter/rules/no-unnecessary-conditions/) no longer reports conditions based on an inapplicable function overload.
+
+  For example, the condition in the following code is no longer reported because `query({})` selects the overload that returns `boolean`:
+
+  ```ts
+  declare function query(options: { initial: string }): { isPending: false };
+  declare function query(options: { initial?: string }): { isPending: boolean };
+
+  const { isPending } = query({});
+  isPending || fallback;
+  ```
+
+- [#11117](https://github.com/biomejs/biome/pull/11117) [`01f7ef5`](https://github.com/biomejs/biome/commit/01f7ef58d4c19a587b01754c96b577a2a5a47418) Thanks [@subotac](https://github.com/subotac)! - Fixed [#11014](https://github.com/biomejs/biome/issues/11014): [`noDelete`](https://biomejs.dev/linter/rules/no-delete/) no longer reports `process.env["FOO"]` style property deletions.
+
 ## 2.5.6
 
 ### Patch Changes
